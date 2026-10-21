@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block title %}About & Clinical Architecture - NeuroScan AI{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-lg-5">
+
+    <!-- Page Header -->
+    <div class="mb-5 text-center mx-auto" style="max-width: 800px;">
+        <span class="badge bg-cyan-subtle text-cyan px-3 py-1 rounded-pill mb-2">Deep Learning & Neuro-Oncology</span>
+        <h1 class="display-6 fw-bold mb-3 text-light">System Architecture & Pathology Reference</h1>
+        <p class="text-muted mb-3">
+            Learn about the convolutional neural network topology, transfer learning workflow, and the clinical radiological characteristics of the four classified brain MRI categories.
+        </p>
+        <div class="d-flex align-items-center justify-content-center gap-2">
+            <a href="{{ url_for('performance') }}" class="btn btn-outline-teal btn-sm rounded-pill px-3">
+                <i class="fa-solid fa-chart-line me-1"></i> View Validation Curves & Confusion Matrix
+            </a>
+            <a href="{{ url_for('index') }}" class="btn btn-teal btn-sm rounded-pill px-3">
+                <i class="fa-solid fa-microscope me-1"></i> Open Diagnostic Console
+            </a>
+        </div>
+    </div>
+
+    <!-- Pathology Cards (4 Classes) -->
+    <h4 class="fw-bold mb-3 d-flex align-items-center gap-2">
+        <i class="fa-solid fa-microscope text-cyan"></i> The Four Classified Brain MRI Categories
+    </h4>
+    
+    <div class="row g-4 mb-5">
+        
+        <!-- Glioma -->
+        <div class="col-md-6 col-xl-3">
+            <div class="card bg-card border border-subtle h-100 shadow-sm">
+                <div class="card-header bg-danger-subtle border-danger-subtle py-2 d-flex align-items-center justify-content-between">
+                    <span class="fw-bold text-danger">Glioma</span>
+                    <i class="fa-solid fa-triangle-exclamation text-danger"></i>
+                </div>
+                <div class="card-body p-3 d-flex flex-column gap-2">
+                    <p class="small text-light mb-1">
+                        Originates from glial cells (astrocytes, oligodendrocytes, ependymal cells). Can range from low-grade astrocytoma to Grade IV Glioblastoma.
+                    </p>
+                    <div class="p-2 rounded bg-dark-subtle border border-subtle small font-mono text-muted">
+                        <strong class="text-light">Key MRI Signs:</strong> Infiltrative borders, variable ring contrast enhancement, significant surrounding vasogenic edema on T2/FLAIR.
+                    </div>
+                    <div class="small text-danger mt-auto">
+                        <i class="fa-solid fa-circle-exclamation me-1"></i> Highest clinical urgency for neurosurgical evaluation.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Meningioma -->
+        <div class="col-md-6 col-xl-3">
+            <div class="card bg-card border border-subtle h-100 shadow-sm">
+                <div class="card-header bg-warning-subtle border-warning-subtle py-2 d-flex align-items-center justify-content-between">
+                    <span class="fw-bold text-warning">Meningioma</span>
+                    <i class="fa-solid fa-circle-exclamation text-warning"></i>
+                </div>
+                <div class="card-body p-3 d-flex flex-column gap-2">
+                    <p class="small text-light mb-1">
+                        Primary tumor arising from arachnoid 'cap' cells of the meninges. Predominantly extra-axial and benign (>80%), but can cause focal mass effect.
+                    </p>
+                    <div class="p-2 rounded bg-dark-subtle border border-subtle small font-mono text-muted">
+                        <strong class="text-light">Key MRI Signs:</strong> Well-circumscribed, extra-axial, homogeneous intense gadolinium enhancement with a pathognomonic <em>dural tail</em> sign.
+                    </div>
+                    <div class="small text-warning mt-auto">
+                        <i class="fa-solid fa-clock me-1"></i> Monitored via serial MRI or resected if symptomatic.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pituitary -->
+        <div class="col-md-6 col-xl-3">
+            <div class="card bg-card border border-subtle h-100 shadow-sm">
+                <div class="card-header bg-info-subtle border-info-subtle py-2 d-flex align-items-center justify-content-between">
+                    <span class="fw-bold text-info">Pituitary Adenoma</span>
+                    <i class="fa-solid fa-circle-dot text-info"></i>
+                </div>
+                <div class="card-body p-3 d-flex flex-column gap-2">
+                    <p class="small text-light mb-1">
+                        Neoplasms located in the sella turcica originating from pituitary neuroendocrine cells. May be functioning (secretory) or non-functioning.
+                    </p>
+                    <div class="p-2 rounded bg-dark-subtle border border-subtle small font-mono text-muted">
+                        <strong class="text-light">Key MRI Signs:</strong> Sellar enlargement, suprasellar extension, compression or draping of the optic chiasm.
+                    </div>
+                    <div class="small text-info mt-auto">
+                        <i class="fa-solid fa-eye me-1"></i> Requires visual perimetry & endocrine hormone panel.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- No Tumor -->
+        <div class="col-md-6 col-xl-3">
+            <div class="card bg-card border border-subtle h-100 shadow-sm">
+                <div class="card-header bg-success-subtle border-success-subtle py-2 d-flex align-items-center justify-content-between">
+                    <span class="fw-bold text-success">No Tumor / Healthy</span>
+                    <i class="fa-solid fa-circle-check text-success"></i>
+                </div>
+                <div class="card-body p-3 d-flex flex-column gap-2">
+                    <p class="small text-light mb-1">
+                        Normal neuroanatomy without evidence of intracranial mass lesions, abnormal midline shift, pathological enhancement, or ventricular distortion.
+                    </p>
+                    <div class="p-2 rounded bg-dark-subtle border border-subtle small font-mono text-muted">
+                        <strong class="text-light">Key MRI Signs:</strong> Normal cerebral cortex, symmetric ventricular size, distinct grey-white matter junctions.
+                    </div>
+                    <div class="small text-success mt-auto">
+                        <i class="fa-solid fa-check me-1"></i> Baseline neurological health verification.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Technical Deep Dive: MobileNetV2 Architecture -->
+    <div class="row g-4 mb-5">
+        <div class="col-lg-6">
+            <div class="card bg-card border border-subtle h-100 shadow-sm p-4">
+                <h5 class="fw-bold mb-3 d-flex align-items-center gap-2">
+                    <i class="fa-solid fa-brain-circuit text-cyan"></i>
+                    Why MobileNetV2 for Medical Vision?
+                </h5>
+                <p class="text-muted small">
+                    MobileNetV2 introduces inverted residual blocks and depthwise separable convolutions, dramatically lowering computational FLOPs and parameter footprint while retaining high discriminatory power:
+                </p>
+
+                <ul class="list-unstyled d-flex flex-column gap-3 small text-light mt-3">
+                    <li class="d-flex align-items-start gap-2">
+                        <i class="fa-solid fa-layer-group text-cyan mt-1"></i>
+                        <div>
+                            <strong>Depthwise Separable Convolutions:</strong> Splits standard 2D convolution into depthwise spatial filtering followed by 1x1 pointwise projection, slashing parameters by ~8x.
+                        </div>
+                    </li>
+                    <li class="d-flex align-items-start gap-2">
+                        <i class="fa-solid fa-compress text-cyan mt-1"></i>
+                        <div>
+                            <strong>Linear Bottlenecks:</strong> Prevents non-linearities (like ReLU) from destroying manifold feature information in low-dimensional compression channels.
+                        </div>
+                    </li>
+                    <li class="d-flex align-items-start gap-2">
+                        <i class="fa-solid fa-gauge-high text-cyan mt-1"></i>
+                        <div>
+                            <strong>Sub-100ms Inference:</strong> Allows point-of-care deployment directly on commodity workstations without requiring expensive high-end GPU clusters.
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card bg-card border border-subtle h-100 shadow-sm p-4">
+                <h5 class="fw-bold mb-3 d-flex align-items-center gap-2">
+                    <i class="fa-solid fa-gears text-cyan"></i>
+                    End-to-End Pipeline
+                </h5>
+                
+                <div class="pipeline-steps d-flex flex-column gap-3 font-mono small">
+                    <div class="p-2 rounded bg-dark-subtle border border-subtle d-flex align-items-center gap-3">
+                        <span class="badge bg-cyan text-dark">Step 1</span>
+                        <span>Input MRI (224 &times; 224 &times; 3 RGB, scaled to [-1.0, +1.0])</span>
+                    </div>
+                    <div class="p-2 rounded bg-dark-subtle border border-subtle d-flex align-items-center gap-3">
+                        <span class="badge bg-cyan text-dark">Step 2</span>
+                        <span>MobileNetV2 Backbone (Pre-trained Feature Extractor)</span>
+                    </div>
+                    <div class="p-2 rounded bg-dark-subtle border border-subtle d-flex align-items-center gap-3">
+                        <span class="badge bg-cyan text-dark">Step 3</span>
+                        <span>GlobalAveragePooling2D &rarr; Dropout (0.3) &rarr; Dense (128, ReLU)</span>
+                    </div>
+                    <div class="p-2 rounded bg-dark-subtle border border-subtle d-flex align-items-center gap-3">
+                        <span class="badge bg-cyan text-dark">Step 4</span>
+                        <span>Softmax Classifier &rarr; 4 Probability Scores &plus; Persistence to SQLite</span>
+                    </div>
+                </div>
+
+                <div class="mt-4 p-3 rounded bg-cyan-subtle border border-cyan-subtle small text-cyan">
+                    <i class="fa-solid fa-terminal me-1"></i> <strong>Training Pipeline:</strong> Easily retrain or fine-tune with <code>python train.py --data_dir dataset/ --epochs 15</code>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

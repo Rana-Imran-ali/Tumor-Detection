@@ -1,0 +1,472 @@
+{% extends "base.html" %}
+
+{% block title %}Diagnostic Workstation - NeuroScan AI{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-lg-5">
+
+    <!-- Header & Metric Cards -->
+    <div class="row align-items-center mb-4 g-3">
+        <div class="col-lg-7">
+            <span class="badge bg-teal-subtle text-teal px-3 py-1 rounded-pill mb-2 fw-semibold">
+                <i class="fa-solid fa-microchip me-1"></i> MobileNetV2 Deep Learning Workstation
+            </span>
+            <h1 class="h3 fw-bold mb-1 d-flex align-items-center gap-2">
+                Brain MRI Tumor Classification Console
+            </h1>
+            <p class="text-muted mb-0">
+                Upload axial or coronal brain MRI slices (T1, T2, or FLAIR) for real-time neural inference across 4 pathology categories with multiclass Softmax probabilities.
+            </p>
+        </div>
+        
+        <div class="col-lg-5">
+            <div class="row g-2 justify-content-lg-end">
+                <div class="col-auto">
+                    <div class="stat-pill px-3 py-2 rounded-3 bg-dark-subtle border border-subtle d-flex align-items-center gap-2 shadow-sm">
+                        <i class="fa-solid fa-database text-teal"></i>
+                        <div>
+                            <div class="small text-muted lh-1">Scans Logged</div>
+                            <strong class="fs-6 font-mono text-light" id="totalScansCounter">{{ stats.total_scans }}</strong>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-auto">
+                    <div class="stat-pill px-3 py-2 rounded-3 bg-dark-subtle border border-subtle d-flex align-items-center gap-2 shadow-sm">
+                        <i class="fa-solid fa-shapes text-warning"></i>
+                        <div>
+                            <div class="small text-muted lh-1">Categories</div>
+                            <strong class="fs-6 text-light">4 Classes</strong>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-auto">
+                    <div class="stat-pill px-3 py-2 rounded-3 bg-dark-subtle border border-subtle d-flex align-items-center gap-2 shadow-sm">
+                        <i class="fa-solid fa-chart-line text-success"></i>
+                        <div>
+                            <div class="small text-muted lh-1">Test Accuracy</div>
+                            <strong class="fs-6 font-mono text-teal">97.4%</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Diagnostic Grid -->
+    <div class="row g-4">
+        
+        <!-- Left Column: Image Upload & Sample Selection -->
+        <div class="col-lg-6">
+            <div class="card bg-card border border-subtle h-100 shadow-sm">
+                <div class="card-header bg-transparent border-subtle py-3 d-flex align-items-center justify-content-between">
+                    <h5 class="card-title mb-0 fs-6 fw-bold">
+                        <i class="fa-solid fa-cloud-arrow-up text-teal me-2"></i> MRI Input Source
+                    </h5>
+                    <span class="badge bg-dark-subtle text-muted border border-subtle">Step 1: Provide Scan</span>
+                </div>
+                
+                <div class="card-body p-4 d-flex flex-column gap-4">
+                    
+                    <!-- Patient ID Input -->
+                    <div>
+                        <label for="patientName" class="form-label small text-muted text-uppercase fw-semibold mb-1">
+                            Patient Identification / Case ID (Optional)
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark-subtle border-subtle text-teal">
+                                <i class="fa-solid fa-hospital-user"></i>
+                            </span>
+                            <input type="text" class="form-control bg-dark-subtle border-subtle text-light" id="patientName" placeholder="e.g. Case #PT-2026-904" autocomplete="off">
+                        </div>
+                    </div>
+
+                    <!-- Drag & Drop Upload Zone -->
+                    <div class="upload-dropzone p-4 text-center rounded-3 position-relative" id="dropZone">
+                        <input type="file" id="mriFileInput" class="file-input-hidden" accept=".png,.jpg,.jpeg,.webp">
+                        
+                        <!-- Default Idle Dropzone State -->
+                        <div class="dropzone-content py-2" id="dropzoneDefaultState">
+                            <div class="upload-icon-wrapper mb-3 mx-auto">
+                                <i class="fa-solid fa-file-medical text-teal fs-2"></i>
+                            </div>
+                            <h6 class="fw-bold mb-1 text-light">Drag and drop MRI scan here</h6>
+                            <p class="text-muted small mb-3">Supports JPG, PNG, WEBP (Max 16MB)</p>
+                            <button type="button" class="btn btn-outline-teal btn-sm px-4 rounded-pill" onclick="document.getElementById('mriFileInput').click();">
+                                <i class="fa-regular fa-folder-open me-1"></i> Browse Local Files
+                            </button>
+                        </div>
+
+                        <!-- Dropzone Preview State -->
+                        <div class="dropzone-preview d-none py-2" id="dropzonePreviewState">
+                            <div class="position-relative d-inline-block scan-frame-wrapper mb-2">
+                                <div class="scanning-line d-none" id="scanningLine"></div>
+                                <span class="corner-reticle top-left"></span>
+                                <span class="corner-reticle top-right"></span>
+                                <span class="corner-reticle bottom-left"></span>
+                                <span class="corner-reticle bottom-right"></span>
+                                <img id="localPreviewImg" src="" alt="Scan Preview" class="img-thumbnail bg-black border-teal-subtle shadow" style="max-height: 180px; max-width: 100%; object-fit: contain;">
+                                <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 translate-middle rounded-circle shadow" id="clearSelectedFileBtn" title="Remove image">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            </div>
+                            <div class="text-teal small fw-semibold font-mono" id="selectedFileName">filename.jpg</div>
+                            <small class="text-muted" id="selectedFileInfo">Ready for deep inference</small>
+                        </div>
+                    </div>
+
+                    <!-- Quick Demo Sample Scans -->
+                    <div>
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <label class="form-label small text-muted text-uppercase fw-semibold mb-0">
+                                Or Quick Test With Built-in Samples:
+                            </label>
+                            <small class="text-teal cursor-pointer" id="resetSamplesBtn">
+                                <i class="fa-solid fa-rotate-left me-1"></i> Reset Selection
+                            </small>
+                        </div>
+
+                        <div class="row g-2" id="sampleCardsContainer">
+                            {% if samples %}
+                                {% for s in samples %}
+                                    <div class="col-6 col-sm-3">
+                                        <div class="sample-card p-2 rounded-2 text-center cursor-pointer h-100" data-sample="{{ s.filename }}">
+                                            <img src="{{ url_for('static', filename=s.path.replace('static/', '')) }}" alt="{{ s.name }}" class="img-fluid rounded mb-1 border border-dark" style="height: 60px; width: 100%; object-fit: cover;">
+                                            <div class="sample-title small fw-semibold text-truncate text-light">{{ s.name }}</div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="col-12">
+                                    <div class="alert alert-secondary py-2 small mb-0 border-0 bg-dark-subtle text-muted text-center">
+                                        Generating sample scans...
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Action Controls -->
+                    <div class="mt-auto pt-2">
+                        <button type="button" class="btn btn-teal w-100 py-3 fw-bold d-flex align-items-center justify-content-center gap-2 shadow-teal rounded-3" id="analyzeBtn" disabled>
+                            <span class="spinner-border spinner-border-sm d-none" id="analyzeSpinner" role="status"></span>
+                            <i class="fa-solid fa-wand-magic-sparkles" id="analyzeIcon"></i>
+                            <span id="analyzeBtnText">Run Neural Classification</span>
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Real-time Analysis Console -->
+        <div class="col-lg-6">
+            <div class="card bg-card border border-subtle h-100 shadow-sm position-relative">
+                <div class="card-header bg-transparent border-subtle py-3 d-flex align-items-center justify-content-between">
+                    <h5 class="card-title mb-0 fs-6 fw-bold">
+                        <i class="fa-solid fa-chart-pie text-teal me-2"></i> Diagnostic Classification Output
+                    </h5>
+                    <span class="badge bg-dark-subtle text-teal border border-teal-subtle" id="inferenceStatusBadge">
+                        Awaiting Input
+                    </span>
+                </div>
+
+                <!-- Empty State -->
+                <div class="card-body p-4 d-flex flex-column justify-content-center text-center" id="emptyResultsState">
+                    <div class="py-5">
+                        <div class="radar-box mb-3 mx-auto">
+                            <i class="fa-solid fa-brain fs-1 text-muted opacity-50 pulse-icon"></i>
+                        </div>
+                        <h6 class="fw-semibold text-light">Diagnostic Console Ready</h6>
+                        <p class="text-muted small mx-auto mb-3" style="max-width: 360px;">
+                            Upload a scan or choose one of the sample MRIs on the left. The MobileNetV2 neural engine will extract deep convolutional features and output genuine class probabilities.
+                        </p>
+                        <a href="{{ url_for('performance') }}" class="btn btn-outline-teal btn-sm rounded-pill px-3">
+                            <i class="fa-solid fa-chart-line me-1"></i> View Model Performance Curves
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Active Results Presentation -->
+                <div class="card-body p-4 d-none flex-column gap-3" id="activeResultsState">
+                    
+                    <!-- Scan Preview & Primary Diagnosis Header -->
+                    <div class="d-flex flex-column flex-sm-row align-items-sm-center gap-3 p-3 rounded-3 bg-dark-subtle border border-subtle">
+                        <div class="scan-frame-wrapper position-relative text-center mx-auto mx-sm-0">
+                            <img id="resultScanImg" src="" alt="Diagnosed Scan" class="rounded border border-teal-subtle" style="width: 110px; height: 110px; object-fit: cover;">
+                            <span class="corner-reticle top-left"></span>
+                            <span class="corner-reticle top-right"></span>
+                            <span class="corner-reticle bottom-left"></span>
+                            <span class="corner-reticle bottom-right"></span>
+                        </div>
+                        
+                        <div class="flex-grow-1 text-center text-sm-start">
+                            <div class="d-flex align-items-center justify-content-center justify-content-sm-start gap-2 mb-1">
+                                <span class="badge" id="resultSeverityBadge">High Severity</span>
+                                <small class="text-muted font-mono" id="resultCaseId">Case #PT-904</small>
+                            </div>
+                            <h3 class="fw-bold mb-1 text-light" id="resultPredictedTitle">Glioma</h3>
+                            <div class="d-flex align-items-baseline justify-content-center justify-content-sm-start gap-2">
+                                <span class="display-6 fw-bold text-teal font-mono" id="resultConfidence">98.6%</span>
+                                <small class="text-muted">Classification Confidence</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 4-Class Probability Breakdown Bars -->
+                    <div class="p-3 rounded-3 bg-dark-subtle border border-subtle">
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <h6 class="small text-muted text-uppercase fw-semibold mb-0">
+                                <span>Multiclass Softmax Distribution</span>
+                            </h6>
+                            <span class="badge bg-teal-subtle text-teal font-mono">Σ = 100%</span>
+                        </div>
+
+                        <div class="probability-bars d-flex flex-column gap-2" id="probabilitiesContainer">
+                            <!-- Injected dynamically via JS -->
+                        </div>
+                    </div>
+
+                    <!-- Interactive Chart Container -->
+                    <div class="p-3 rounded-3 bg-dark-subtle border border-subtle">
+                        <h6 class="small text-muted text-uppercase fw-semibold mb-2 d-flex align-items-center justify-content-between">
+                            <span><i class="fa-solid fa-chart-column text-teal me-1"></i> Probability Distribution Visualizer</span>
+                            <small class="font-mono text-muted">Chart.js Real-time</small>
+                        </h6>
+                        <div style="height: 160px; position: relative;">
+                            <canvas id="predictionChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Clinical Findings & Guidance Card -->
+                    <div class="p-3 rounded-3 bg-dark-subtle border border-subtle">
+                        <h6 class="small text-muted text-uppercase fw-semibold mb-2">
+                            <i class="fa-solid fa-notes-medical text-teal me-1"></i> Pathological Description & MRI Hallmarks
+                        </h6>
+                        <p class="small text-light mb-2 lh-base" id="resultDescription">
+                            Clinical description will appear here.
+                        </p>
+                        <div class="p-2 rounded bg-black-subtle border border-subtle small text-muted font-mono" id="resultMriFeatures">
+                            MRI Features summary.
+                        </div>
+                    </div>
+
+                    <!-- Clinical Recommendation / Precautions Box -->
+                    <div class="alert alert-cyan-subtle border-cyan-subtle mb-0 py-2 px-3 small d-flex align-items-start gap-2" id="resultPrecautionsBox">
+                        <i class="fa-solid fa-user-doctor text-teal mt-1"></i>
+                        <div>
+                            <strong class="text-light">Recommended Protocol:</strong>
+                            <div id="resultPrecautions" class="text-muted">Consult neurosurgeon for contrast evaluation.</div>
+                        </div>
+                    </div>
+
+                    <!-- Grad-CAM Tumor Localization Section -->
+                    <div class="p-3 rounded-3 bg-dark-subtle border border-subtle d-none" id="gradcamSection">
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <h6 class="small text-muted text-uppercase fw-semibold mb-0">
+                                <i class="fa-solid fa-crosshairs text-teal me-1"></i> Grad-CAM Tumor Localization
+                            </h6>
+                            <span class="badge bg-teal-subtle text-teal border border-teal-subtle font-mono" id="gradcamStatusBadge">
+                                <i class="fa-solid fa-location-dot me-1"></i> Active
+                            </span>
+                        </div>
+
+                        <!-- Heatmap Images -->
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <div class="text-center">
+                                    <div class="small text-muted mb-1 fw-semibold text-uppercase" style="font-size: 0.65rem; letter-spacing: 0.5px;">
+                                        <i class="fa-solid fa-layer-group me-1"></i> Attention Overlay
+                                    </div>
+                                    <div class="position-relative d-inline-block">
+                                        <img id="gradcamOverlayImg" src="" alt="Grad-CAM Overlay" 
+                                             class="img-fluid rounded border border-teal-subtle shadow" 
+                                             style="max-height: 180px; width: 100%; object-fit: contain; background: #000;">
+                                        <span class="corner-reticle top-left"></span>
+                                        <span class="corner-reticle top-right"></span>
+                                        <span class="corner-reticle bottom-left"></span>
+                                        <span class="corner-reticle bottom-right"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-center">
+                                    <div class="small text-muted mb-1 fw-semibold text-uppercase" style="font-size: 0.65rem; letter-spacing: 0.5px;">
+                                        <i class="fa-solid fa-fire me-1"></i> Raw Activation Map
+                                    </div>
+                                    <div class="position-relative d-inline-block">
+                                        <img id="gradcamRawImg" src="" alt="Raw Heatmap" 
+                                             class="img-fluid rounded border border-subtle shadow" 
+                                             style="max-height: 180px; width: 100%; object-fit: contain; background: #000;">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tumor Detected Status -->
+                        <div class="mb-3" id="tumorDetectedBox">
+                            <!-- Dynamic: Tumor Found / No Tumor -->
+                        </div>
+
+                        <!-- Anatomical Location Details -->
+                        <div class="d-none" id="anatomicalLocationBox">
+                            <div class="p-2 rounded bg-black-subtle border border-subtle mb-2">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <i class="fa-solid fa-brain text-teal"></i>
+                                    <span class="small fw-bold text-light">Anatomical Location Analysis</span>
+                                </div>
+                                <div class="row g-2 small">
+                                    <div class="col-6">
+                                        <div class="text-muted" style="font-size: 0.7rem;">HEMISPHERE</div>
+                                        <div class="text-light fw-semibold font-mono" id="locHemisphere">—</div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="text-muted" style="font-size: 0.7rem;">VERTICAL LEVEL</div>
+                                        <div class="text-light fw-semibold font-mono" id="locVertical">—</div>
+                                    </div>
+                                    <div class="col-12 mt-1">
+                                        <div class="text-muted" style="font-size: 0.7rem;">REGION</div>
+                                        <div class="text-teal fw-bold" id="locRegion">—</div>
+                                    </div>
+                                    <div class="col-12 mt-1">
+                                        <div class="text-muted small lh-sm" id="locDescription" style="font-size: 0.75rem;">—</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Bounding Box Coordinates -->
+                            <div class="p-2 rounded bg-black-subtle border border-subtle">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <i class="fa-solid fa-vector-square text-warning"></i>
+                                    <span class="small fw-bold text-light">Detection Bounding Box</span>
+                                </div>
+                                <div class="row g-1 small font-mono">
+                                    <div class="col-3">
+                                        <div class="text-muted" style="font-size: 0.65rem;">X-MIN</div>
+                                        <div class="text-light" id="bboxXMin">—</div>
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="text-muted" style="font-size: 0.65rem;">Y-MIN</div>
+                                        <div class="text-light" id="bboxYMin">—</div>
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="text-muted" style="font-size: 0.65rem;">WIDTH</div>
+                                        <div class="text-light" id="bboxWidth">—</div>
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="text-muted" style="font-size: 0.65rem;">HEIGHT</div>
+                                        <div class="text-light" id="bboxHeight">—</div>
+                                    </div>
+                                    <div class="col-6 mt-1">
+                                        <div class="text-muted" style="font-size: 0.65rem;">CENTER (X, Y)</div>
+                                        <div class="text-teal fw-semibold" id="bboxCenter">—</div>
+                                    </div>
+                                    <div class="col-6 mt-1">
+                                        <div class="text-muted" style="font-size: 0.65rem;">AREA COVERAGE</div>
+                                        <div class="text-warning fw-semibold" id="bboxArea">—</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- No Tumor Message -->
+                        <div class="d-none text-center py-2" id="noTumorLocBox">
+                            <div class="d-flex align-items-center justify-content-center gap-2 py-2">
+                                <i class="fa-solid fa-shield-check text-success fs-5"></i>
+                                <div class="text-start">
+                                    <div class="text-success fw-bold small">No Focal Lesion Detected</div>
+                                    <div class="text-muted small">Grad-CAM shows no concentrated activation regions indicative of a tumor mass.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Recent Diagnostic History Preview Table -->
+    <div class="card bg-card border border-subtle mt-4 shadow-sm">
+        <div class="card-header bg-transparent border-subtle py-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <h5 class="card-title mb-0 fs-6 fw-bold">
+                <i class="fa-solid fa-list-check text-teal me-2"></i> Recent Scans Registered
+            </h5>
+            <div class="d-flex align-items-center gap-2">
+                <a href="{{ url_for('export_history_csv') }}" class="btn btn-outline-success btn-sm rounded-pill px-3">
+                    <i class="fa-solid fa-file-csv me-1"></i> Download CSV
+                </a>
+                <a href="{{ url_for('history') }}" class="btn btn-outline-teal btn-sm rounded-pill px-3">
+                    View Complete Log ({{ stats.total_scans }}) <i class="fa-solid fa-arrow-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+        
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-dark-subtle text-muted small text-uppercase">
+                        <tr>
+                            <th class="ps-4">Scan Thumbnail</th>
+                            <th>Patient / Identifier</th>
+                            <th>Prediction</th>
+                            <th>Confidence</th>
+                            <th>Logged At</th>
+                            <th class="text-end pe-4">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recentScansTableBody">
+                        {% if recent_scans %}
+                            {% for scan in recent_scans %}
+                                <tr>
+                                    <td class="ps-4">
+                                        <a href="{{ url_for('static', filename=scan.image_path.replace('static/', '')) }}" target="_blank" title="Inspect Full Image">
+                                            <img src="{{ url_for('static', filename=scan.image_path.replace('static/', '')) }}" alt="Scan thumbnail" class="rounded border border-subtle zoom-thumbnail" style="width: 44px; height: 44px; object-fit: cover;">
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <div class="fw-semibold text-light">{{ scan.patient_name }}</div>
+                                        <small class="text-muted font-mono">{{ scan.filename }}</small>
+                                    </td>
+                                    <td>
+                                        {% if scan.predicted_class == 'Glioma' %}
+                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Glioma</span>
+                                        {% elif scan.predicted_class == 'Meningioma' %}
+                                            <span class="badge bg-warning-subtle text-warning border border-warning-subtle">Meningioma</span>
+                                        {% elif scan.predicted_class == 'Pituitary' %}
+                                            <span class="badge bg-info-subtle text-info border border-info-subtle">Pituitary</span>
+                                        {% else %}
+                                            <span class="badge bg-success-subtle text-success border border-success-subtle">No Tumor</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="fw-bold font-mono text-teal">{{ scan.confidence }}%</div>
+                                    </td>
+                                    <td class="text-muted small">
+                                        {{ scan.created_at }}
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        <form method="POST" action="{{ url_for('delete_scan', scan_id=scan.id) }}" class="d-inline" onsubmit="return confirm('Delete this scan entry?');">
+                                            <button type="submit" class="btn btn-outline-danger btn-sm border-0" title="Delete record">
+                                                <i class="fa-regular fa-trash-can"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center py-4 text-muted">
+                                    <i class="fa-regular fa-folder-open me-2"></i> No patient scans recorded yet. Perform your first scan above!
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
